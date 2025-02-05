@@ -16,14 +16,18 @@ provider "aws" {
 resource "aws_instance" "example" {
   ami                    = "ami-0fb653ca2d3203ac1"
   instance_type          = "t2.micro"
+
+  # セキュリティグループを参照
   vpc_security_group_ids = [aws_security_group.instance.id]
 
+  # インスタンスが起動するときに実行されるスクリプト
   user_data = <<-EOF
               #!/bin/bash
               echo "Hello, World" > index.html
               nohup busybox httpd -f -p 8080 &
               EOF
-
+  
+  # インスタンスが変更されるときに、user_dataを再実行する
   user_data_replace_on_change = true
 
   tags = {
@@ -43,12 +47,14 @@ resource "aws_security_group" "instance" {
   }
 }
 
+# 変数の定義
 variable "security_group_name" {
   description = "The name of the security group"
   type        = string
   default     = "terraform-example-instance"
 }
 
+# インスタンスのパブリックIPアドレスを出力
 output "public_ip" {
   value       = aws_instance.example.public_ip
   description = "The public IP of the Instance"
